@@ -21,18 +21,13 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"  
+    classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
   }
 }
 
 // This adds tasks to auto close or release nexus staging repos
 // see https://github.com/Codearte/gradle-nexus-staging-plugin/
 project.plugins.apply 'io.codearte.nexus-staging'
-project.nexusStaging {
-  username = project.sonatypeUser
-  password = project.sonatypePwd
-  packageGroup = 'org.ehcache'
-}
 
 // Disable automatic promotion for added safety
 closeAndPromoteRepository.enabled = false
@@ -73,10 +68,25 @@ if (deployUrl.contains('nexus')) {
     deployUser = tcDeployUser
     deployPwd = tcDeployPassword
   }
+  project.nexusStaging {
+    username = tcDeployUser
+    password = tcDeployPassword
+    packageGroup = 'Ehcache OS' // has to match repo profile name
+    //this plugin takes the base path rather than the full url,
+    // and does not use the value of deployUrl
+    serverUrl = deployUrl.replace('/staging/deploy/maven2', '')
+  }
+
 } else {
   ext {
     deployUser = sonatypeUser
     deployPwd = sonatypePwd
+  }
+  project.nexusStaging {
+    username = sonatypeUser
+    password = sonatypePwd
+    packageGroup = 'org.ehcache'
+    //by default serverUrl goes to sonatype
   }
 }
 
